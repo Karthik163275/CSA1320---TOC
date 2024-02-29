@@ -1,0 +1,57 @@
+#include <stdio.h>
+#include <stdbool.h>
+#define MAX_STATES 100
+#define MAX_TRANSITIONS 100
+struct State {
+    int transitions[MAX_TRANSITIONS];
+    int transitionCount;
+};
+void addTransition(struct State *state, int nextState) {
+    state->transitions[state->transitionCount++] = nextState;
+}
+void findEpsilonClosure(struct State states[], bool visited[], int currentState, int epsilonClosure[]) {
+    visited[currentState] = true;
+    epsilonClosure[currentState] = 1;
+    for (int i = 0; i < states[currentState].transitionCount; i++) {
+        int nextState = states[currentState].transitions[i];
+        if (!visited[nextState]) {
+            findEpsilonClosure(states, visited, nextState, epsilonClosure);
+        }
+    }
+}
+void findAllEpsilonClosures(struct State states[], int stateCount) {
+    bool visited[MAX_STATES] = { false };
+    for (int i = 0; i < stateCount; i++) {
+        int epsilonClosure[MAX_STATES] = { 0 };
+        findEpsilonClosure(states, visited, i, epsilonClosure);
+        printf("ε-closure(%d) = { ", i);
+        for (int j = 0; j < stateCount; j++) {
+            if (epsilonClosure[j] == 1) {
+                printf("%d ", j);
+            }
+        }
+        printf("}\n");
+        for (int j = 0; j < stateCount; j++) {
+            visited[j] = false;
+        }
+    }
+}
+int main() {
+    int stateCount, transitionCount;
+    printf("Enter the number of states in NFA: ");
+    scanf("%d", &stateCount);
+    struct State states[stateCount];
+    for (int i = 0; i < stateCount; i++) {
+        states[i].transitionCount = 0;
+    }
+    printf("Enter the number of transitions in NFA: ");
+    scanf("%d", &transitionCount);
+    printf("Enter transitions (in the format: currentState nextState):\n");
+    for (int i = 0; i < transitionCount; i++) {
+        int currentState, nextState;
+        scanf("%d %d", &currentState, &nextState);
+        addTransition(&states[currentState], nextState);
+    }
+    findAllEpsilonClosures(states, stateCount);
+    return 0;
+}
